@@ -78,12 +78,24 @@ namespace Microsoft.Azure.WebJobs.Host.Bindings.Path
         /// a dictionary.
         /// </summary>
         /// <param name="parameters">Dictionary providing parameter values.</param>
+        /// <param name="ignoreCase">True if matching should be case insensitive.</param>
         /// <returns>Resolved string if succeeded.</returns>
         /// <exception cref="InvalidOperationException">Thrown when required parameter value is not available.
         /// </exception>
-        public string Bind(IReadOnlyDictionary<string, string> parameters)
+        public string Bind(IReadOnlyDictionary<string, string> parameters, bool ignoreCase = false)
         {
             StringBuilder builder = new StringBuilder();
+
+            if (ignoreCase && parameters != null)
+            {
+                // convert to a case insensitive dictionary
+                var caseInsensitive = new Dictionary<string, string>(parameters.Count, StringComparer.OrdinalIgnoreCase);
+                foreach (var pair in parameters)
+                {
+                    caseInsensitive.Add(pair.Key, pair.Value);
+                }
+                parameters = caseInsensitive;
+            }
 
             foreach (BindingTemplateToken token in Tokens)
             {
